@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+ 
+
+
+      <title>Managing the Lifecycle of your Elasticsearch Indices - </title>
+
+  <meta name="description" content="Managing the Lifecycle of your Elasticsearch Indices Just like me, you are probably storing your [Applications | Infrastructure | IoT ] Logs / Traces (as a time series) into Elasticsearch or at least considering doing it.
+If that is the case, you might be wondering how to efficiently manage index lifecycles in an automated and clean manner, then this post is for you!
+What&rsquo;s happening? Basically, this means that your log management/aggregator applications are storing the logs in Elasticsearch using the timestamp (of capture, processing, or another one) for every record of data and grouping, using a pattern for every group."><script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "WebSite",
+    "name": "My New Hugo Site",
+    
+    "url": "http:\/\/localhost:1313\/"
+}
+</script><script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Organization",
+  "name": "",
+  "url": "http:\/\/localhost:1313\/"
+  
+  
+  
+  
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@id": "http:\/\/localhost:1313\/",
+          "name": "home"
+        }
+    },{
+        "@type": "ListItem",
+        "position": 3,
+        "item": {
+          "@id": "http:\/\/localhost:1313\/blog\/post\/2020\/05\/13\/1\/managing-the-lifecycle-of-your-elasticsearch-indices\/",
+          "name": "Managing the lifecycle of your elasticsearch indices"
+        }
+    }]
+}
+</script><script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "author": {
+    "name" : ""
+  },
+  "headline": "Managing the Lifecycle of your Elasticsearch Indices",
+  "description" : "Managing the Lifecycle of your Elasticsearch Indices Just like me, you are probably storing your [Applications | Infrastructure | IoT ] Logs \/ Traces (as a time series) into Elasticsearch or at least considering doing it.\nIf that is the case, you might be wondering how to efficiently manage index lifecycles in an automated and clean manner, then this post is for you!\nWhat\u0026rsquo;s happening? Basically, this means that your log management\/aggregator applications are storing the logs in Elasticsearch using the timestamp (of capture, processing, or another one) for every record of data and grouping, using a pattern for every group.",
+  "inLanguage" : "en",
+  "wordCount":  1657 ,
+  "datePublished" : "2020-05-13T17:59:22",
+  "dateModified" : "2020-05-13T17:59:22",
+  "image" : "http:\/\/localhost:1313\/",
+  "keywords" : [ "" ],
+  "mainEntityOfPage" : "http:\/\/localhost:1313\/blog\/post\/2020\/05\/13\/1\/managing-the-lifecycle-of-your-elasticsearch-indices\/",
+  "publisher" : {
+    "@type": "Organization",
+    "name" : "http:\/\/localhost:1313\/",
+    "logo" : {
+        "@type" : "ImageObject",
+        "url" : "http:\/\/localhost:1313\/",
+        "height" :  60 ,
+        "width" :  60
+    }
+  }
+}
+</script>
+
+<meta property="og:title" content="Managing the Lifecycle of your Elasticsearch Indices" />
+<meta property="og:description" content="Managing the Lifecycle of your Elasticsearch Indices Just like me, you are probably storing your [Applications | Infrastructure | IoT ] Logs / Traces (as a time series) into Elasticsearch or at least considering doing it.
+If that is the case, you might be wondering how to efficiently manage index lifecycles in an automated and clean manner, then this post is for you!
+What&rsquo;s happening? Basically, this means that your log management/aggregator applications are storing the logs in Elasticsearch using the timestamp (of capture, processing, or another one) for every record of data and grouping, using a pattern for every group.">
+<meta property="og:url" content="http://localhost:1313/blog/post/2020/05/13/1/managing-the-lifecycle-of-your-elasticsearch-indices/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="My New Hugo Site" />
+
+  <meta name="twitter:title" content="Managing the Lifecycle of your Elasticsearch Indices" />
+  <meta name="twitter:description" content="Managing the Lifecycle of your Elasticsearch Indices Just like me, you are probably storing your [Applications | Infrastructure | IoT ] Logs / Traces (as a time series) into Elasticsearch or at least …">
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="generator" content="Hugo 0.123.7">
+  <link rel="alternate" href="http://localhost:1313/index.xml" type="application/rss+xml" title="My New Hugo Site"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" integrity="sha384-3UiQGuEI4TTMaFmGIZumfRPtfKQ3trwQE2JgosJxCnGmQpL/lJdjpcHkaaFwHlcI" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous"><link rel="stylesheet" href="http://localhost:1313/css/main.css" /><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" /><link rel="stylesheet" href="http://localhost:1313/css/syntax.css" /><link rel="stylesheet" href="http://localhost:1313/css/codeblock.css" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.2/photoswipe.min.css" integrity="sha384-h/L2W9KefUClHWaty3SLE5F/qvc4djlyR4qY3NUV5HGQBBW7stbcfff1+I/vmsHh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.2/default-skin/default-skin.min.css" integrity="sha384-iD0dNku6PYSIQLyfTOpB06F2KCZJAKLOThS5HRe8b3ibhdEQ6eKsFf/EeFxdOt5R" crossorigin="anonymous">
+
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://localhost:1313/">My New Hugo Site</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+        
+
+        
+
+        
+      </ul>
+    </div>
+
+    
+
+  </div>
+</nav>
+
+
+
+
+    
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+
+  
+  
+  
+
+
+
+
+
+
+  
+
+  <header class="header-section ">
+    
+    
+    <div class="intro-header no-img">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <div class="blog-heading">
+              
+                <h1>Managing the Lifecycle of your Elasticsearch Indices</h1>
+              
+              
+                <hr class="small">
+              
+              
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  </header>
+
+
+    
+<div class="container" role="main">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+        <h2 id="managing-the-lifecycle-of-your-elasticsearch-indices">Managing the Lifecycle of your Elasticsearch Indices</h2>
+<p><strong>Just like me, you are probably</strong> storing your <strong>[Applications | Infrastructure | IoT ] Logs / Traces</strong> (<a href="https://en.wikipedia.org/wiki/Time_series">as a time series</a>) into Elasticsearch or at least <strong>considering doing it.</strong></p>
+<p><strong>If that is the case, you might be wondering how to efficiently manage index lifecycles in an automated and clean manner, then this post is for you!</strong></p>
+<h3 id="whats-happening">What&rsquo;s happening?</h3>
+<p>Basically, this means that your log management/aggregator applications are storing the logs in Elasticsearch using the <strong>timestamp</strong> (of capture, processing, or another one) for every record of data and <strong>grouping, using a pattern for every group.</strong></p>
+<p>In Elasticsearch terms, this <strong>group of logs</strong> is called index and the pattern is referring commonly to the suffix used when you create the index name, e.g.: <strong>sample-logs-2020-04-25.</strong></p>
+<h3 id="the-problem">The problem</h3>
+<p>Until here everything is ok, right? so the problems begin when your data starts accumulating and you don&rsquo;t want to spend too much time/money to store/maintain/delete it.</p>
+<p>Additionally, you may be managing all the indices the same, regardless of data retention requirements or access patterns. All the indices have the same number of replicas, shards, disk type, etc. In my case, it is more important the first week of indices than the indices three months old.</p>
+<p>As I mentioned before, depending on your index name and configuration, you will end up with different indexes aggregating logs based on different timeframes.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>sample-logs-2020-04-22
+</span></span><span style="display:flex;"><span>sample-logs-2020-04-23
+</span></span><span style="display:flex;"><span>sample-logs-2020-04-24
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>sample-logs-2020-04-27
+</span></span></code></pre></div><p>It is likely that just like I was doing few months back, you are using your custom Script/Application implementing the <a href="https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html">Elasticsearch Curator API</a> or going directly over the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html">Elasticsearch index API</a> to delete or maintain your indices lifecycle or worst, you are storing your indices forever without any kind of control or deleting it manually.</p>
+<h3 id="my-logs-cases">My logs cases</h3>
+<h4 id="case-1">Case 1</h4>
+<p>Third-party applications that use their own index name pattern like <strong>indexname-yyyy-mm-dd</strong> and I cannot / I don&rsquo;t want to change it.  e.g. <a href="https://zipkin.io/">Zipkin</a> (zipkin-2020-04-25)</p>
+<p><img src="/blog/post/2020/05/13/1/images/logs-open-distro-elasticsearch-1.jpg" alt="image 1"></p>
+<h4 id="case-2">Case 2</h4>
+<p>My own log aggregator (custom <a href="https://aws.amazon.com/lambda">AWS Lambda function</a>) and/or third-party applications like fluentd, LogStash,  etc. That allows me to change the index name pattern. So, in this case I can decide how to aggregate my logs and the index pattern name I want to use.</p>
+<p><img src="/blog/post/2020/05/13/1/images/logs-open-distro-elasticsearch-2.jpg" alt="image 1"></p>
+<blockquote>
+<p><strong>One more thing before moving on</strong>: The term used for Elasticsearch to create a index per day, hour, month, etc. is <strong>rollover.</strong></p>
+</blockquote>
+<h3 id="the-solution">The Solution</h3>
+<h4 id="preliminaries">Preliminaries</h4>
+<p>In my case, I’m using <a href="https://aws.amazon.com/elasticsearch-service">AWS Elasticsearch Service</a> which is a <a href="https://logz.io/blog/open-distro-for-elasticsearch/">“little bit different”</a> from the <a href="https://www.elastic.co/elasticsearch/">Elasticsearch Elastic</a> since <a href="https://aws.amazon.com/blogs/aws/new-open-distro-for-elasticsearch/">AWS decided to create their own Elasticsearch fork</a> called <a href="https://opendistro.github.io/for-elasticsearch/">Open Distro for Elasticsearch</a>.</p>
+<p>the key terms to understand <strong>“Index Lifecycle”</strong> in every Elasticsearch distribution is:</p>
+<ul>
+<li><a href="https://opendistro.github.io/for-elasticsearch-docs/docs/ism/">Index State Management (ISM)</a>  → Open Distro for Elasticsearch</li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/overview-index-lifecycle-management.html">Index lifecycle management (ILM)</a> → Elasticsearch Elastic</li>
+</ul>
+<p>ElasticSearch concepts are out of the scope of this post, in the below cases I will explain how <strong>Open Distro for Elasticsearch</strong> manages its indices lifecycle.</p>
+<h4 id="case-1-1">Case 1</h4>
+<p>&hellip; Remember above.</p>
+<blockquote>
+<p>The log management/aggregation application makes the “rollover” of my indices, but I would like to delete/change those after the index has rolled — The most common</p>
+</blockquote>
+<p>Create an <a href="https://opendistro.github.io/for-elasticsearch-docs/docs/ism/policies/">Index State Management Policy</a> to delete indices <strong>based on time and/or size</strong> and using an <a href="https://opendistro.github.io/for-elasticsearch-docs/docs/elasticsearch/index-templates/">Elasticsearch Templates</a> and <a href="https://opendistro.github.io/for-elasticsearch-docs/docs/elasticsearch/index-alias/">Elasticsearch Aliases</a> your Elasticsearch engine can delete your indices periodically.</p>
+<blockquote>
+<p>And yes, the result is very similar to what I was doing with my custom AWS Lambda function in Python using Elasticsearch Curator API</p>
+</blockquote>
+<blockquote>
+<p>But, without the hassle of writing any code, handling connection errors, upgrade my code every time my Elasticsearch was upgraded, credentials, changing the env vars to pass the new indices name, etc.</p>
+</blockquote>
+<p>Now, thanks to <strong>ISM</strong> I can use a <strong>JSON declarative language</strong> to define some rules <strong>(policies)</strong> and the Elasticsearch engine is in charge of the rest.</p>
+<p><strong>Policies?</strong> … imagine you can implement this kind of rules</p>
+<ol>
+<li><strong>Keep</strong> “my fresh indices” open to write for <strong>2 days</strong>, then</li>
+<li>After the 2 first days, closes those indices for write operations and keep them <strong>until 13 days</strong> more, then</li>
+<li><strong>15 days</strong> after index creation, <strong>delete it forever</strong>, end</li>
+</ol>
+<p><strong>What does this means?</strong> well, after learning about the <a href="https://opendistro.github.io/for-elasticsearch-docs/docs/ism/policies/">ISM Policies</a> and using<a href="https://github.com/christiangda/es-lifecycle-ism/blob/master/images/kibana-dev-tool.png"> Kibana Dev Tool</a>, I created a policy name <strong>delete_after_15d</strong> following the rules described above, and here you have it.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># ISM Policy delete_after_15d</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>PUT _opendistro/_ism/policies/delete_after_15d
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;policy&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>        <span style="color:#e6db74">&#34;policy_id&#34;</span>: <span style="color:#e6db74">&#34;delete_after_15d&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;Maintains the indices open by 2 days, then closes those and delete indices after 15 days&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;default_state&#34;</span>: <span style="color:#e6db74">&#34;ReadWrite&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;schema_version&#34;</span>: 1,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;states&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;ReadWrite&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;actions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                        <span style="color:#e6db74">&#34;read_write&#34;</span>: <span style="color:#f92672">{}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;transitions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;state_name&#34;</span>: <span style="color:#e6db74">&#34;ReadOnly&#34;</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;conditions&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                            <span style="color:#e6db74">&#34;min_index_age&#34;</span>: <span style="color:#e6db74">&#34;2d&#34;</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;ReadOnly&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;actions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                        <span style="color:#e6db74">&#34;read_only&#34;</span>: <span style="color:#f92672">{}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;transitions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;state_name&#34;</span>: <span style="color:#e6db74">&#34;Delete&#34;</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;conditions&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                            <span style="color:#e6db74">&#34;min_index_age&#34;</span>: <span style="color:#e6db74">&#34;13d&#34;</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Delete&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;actions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                        <span style="color:#e6db74">&#34;delete&#34;</span>: <span style="color:#f92672">{}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>NOTE:</strong> Notice the highlighted lines, are these my rules described above?</p>
+<p>Then using the following <a href="https://opendistro.github.io/for-elasticsearch-docs/docs/elasticsearch/index-templates/">Elasticsearch Templates</a>, I applied the policy (above), see template line (below) 8, to my indices following a pattern in the line 5</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Template sample-logs to apply the ISM Policy delete_after_15d to new indices</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>PUT _template/sample-logs
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;index_patterns&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>        <span style="color:#e6db74">&#34;sample-logs-*&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">]</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;settings&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>        <span style="color:#e6db74">&#34;index.opendistro.index_state_management.policy_id&#34;</span>: <span style="color:#e6db74">&#34;delete_after_15d&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>Now what? Is it ready?</strong></p>
+<p>For the <strong>new indices</strong>, yes. The indices created after you created this template into your Elasticsearch.</p>
+<p><strong>What about the old ones?</strong></p>
+<p>The indices created before applying the index template. For these we need to change its definition and add the line 5</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Change the oldest indices definition to apply the ISM Policy delete_after_15d</span>
+</span></span><span style="display:flex;"><span>PUT sample-logs-2020-*/_settings
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;settings&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#e6db74">&#34;index.opendistro.index_state_management.policy_id&#34;</span>: <span style="color:#e6db74">&#34;delete_after_15d&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>But, how do I complete the tasks you mention before?</strong></p>
+<p>Don’t worry, keep calm!, <a href="https://github.com/slashdevops/es-lifecycle-ism">here https://github.com/slashdevops/es-lifecycle-ism</a> you have the complete explanation to apply this rule in your own Elasticsearch, also how to test it into an Elasticsearch instance or create it locally with docker-compose.</p>
+<h4 id="case-2-1">Case 2</h4>
+<blockquote>
+<p>My Elasticsearch rolls over the indices base on time and/or size and I want to have only one entry point (index) to send my logs — I think it is the best one</p>
+</blockquote>
+<p>The rules again</p>
+<ol>
+<li>Rollover <strong>“my fresh indices”</strong> after 1 day, then</li>
+<li>Close those indices for write operations and keep it <strong>until 13 days more</strong>, then</li>
+<li><strong>After 15 days</strong> of the index was created, <strong>delete it forever</strong>, end</li>
+</ol>
+<p>Well, to do that I create an <strong>ISM policy</strong> named <strong>rollover_1d_delete_after_15</strong> to control the state of my indices and using the rollover action.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span></span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span></span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># ISM Policy rollover_1d_delete_after_15</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>PUT _opendistro/_ism/policies/rollover_1d_delete_after_15
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;policy&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>        <span style="color:#e6db74">&#34;policy_id&#34;</span>: <span style="color:#e6db74">&#34;rollover_1d_delete_after_15&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;Rollover every 1d, then closes those and delete indices after 15 days&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;default_state&#34;</span>: <span style="color:#e6db74">&#34;Rollover&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;schema_version&#34;</span>: 1,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;states&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Rollover&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;actions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                        <span style="color:#e6db74">&#34;rollover&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                            <span style="color:#e6db74">&#34;min_index_age&#34;</span>: <span style="color:#e6db74">&#34;1d&#34;</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;transitions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;state_name&#34;</span>: <span style="color:#e6db74">&#34;ReadOnly&#34;</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;conditions&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                            <span style="color:#e6db74">&#34;min_index_age&#34;</span>: <span style="color:#e6db74">&#34;2d&#34;</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;ReadOnly&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;actions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;read_only&#34;</span>: <span style="color:#f92672">{}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;transitions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;state_name&#34;</span>: <span style="color:#e6db74">&#34;Delete&#34;</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;conditions&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                            <span style="color:#e6db74">&#34;min_index_age&#34;</span>: <span style="color:#e6db74">&#34;13d&#34;</span>
+</span></span><span style="display:flex;"><span>                        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Delete&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;actions&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>                        <span style="color:#e6db74">&#34;delete&#34;</span>: <span style="color:#f92672">{}</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">]</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;transitions&#34;</span>: <span style="color:#f92672">[]</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>NOTE:</strong> Notice the highlighted lines, did you see the rollover action?</p>
+<p>Then <a href="#case-1">like in case 1</a>, using the following <a href="https://opendistro.github.io/for-elasticsearch-docs/docs/elasticsearch/index-templates/">Elasticsearch Templates</a>, I applied the policy above, see template (below) line 7, to my indices following a pattern in the line 5.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span></span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span></span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Template sample-logs-rollover to apply the ISM Policy</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#75715e"># rollover_1d_delete_after_15 to new indices</span>
+</span></span><span style="display:flex;"><span>PUT _template/sample-logs-rollover
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#e6db74">&#34;index_patterns&#34;</span>: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;sample-logs-rollover-*&#34;</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#f92672">]</span>,
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#e6db74">&#34;settings&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>        <span style="color:#e6db74">&#34;index.opendistro.index_state_management.policy_id&#34;</span>: <span style="color:#e6db74">&#34;rollover_1d_delete_after_15&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;index.opendistro.index_state_management.rollover_alias&#34;</span>: <span style="color:#e6db74">&#34;sample-logs-rollover&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>What does it means?</strong></p>
+<p>Now Elasticsearch Engine will be in charge of rollover the indices and you don’t need to create any index name pattern when indexing your data over Elasticsearch, in other words, your Application logs’ aggregator doesn’t need to rollover your indices.</p>
+<p>The last step and obligatory to trigger all the rollover processes inside Elasticsearch, it creates the first rollover index according to the template and aliases defined inside this.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span></span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Create the first rollover manually (it is necessary)</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#75715e"># to trigger ISM Policy association</span>
+</span></span><span style="display:flex;"><span>PUT sample-logs-rollover-000001
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#e6db74">&#34;aliases&#34;</span>: <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>        <span style="color:#e6db74">&#34;sample-logs-rollover&#34;</span>:<span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;is_write_index&#34;</span>: true
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>So, How do I index my data now?</strong></p>
+<p>Using the rollover alias (template definition above line 5) created in the Elasticsearch template. Now you have only one index name (index alias) to configure your Custom Program / LogStash / Fluentd, etc and you can forget the suffix pattern.</p>
+<p>Here is an example of how to insert data <strong>using the rollover index alias</strong>:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span></span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Bulk load sample, NOTE: To insert data use the rollover aliases</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>POST _bulk
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">{</span><span style="color:#e6db74">&#34;index&#34;</span>: <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;_index&#34;</span>: <span style="color:#e6db74">&#34;sample-logs-rollover&#34;</span><span style="color:#f92672">}}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span><span style="color:#e6db74">&#34;message&#34;</span>: <span style="color:#e6db74">&#34;This is a log sample 1&#34;</span>, <span style="color:#e6db74">&#34;@timestamp&#34;</span>: <span style="color:#e6db74">&#34;2020-04-26T11:07:00+0000&#34;</span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">{</span><span style="color:#e6db74">&#34;index&#34;</span>: <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;_index&#34;</span>: <span style="color:#e6db74">&#34;sample-logs-rollover&#34;</span><span style="color:#f92672">}}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span><span style="color:#e6db74">&#34;message&#34;</span>: <span style="color:#e6db74">&#34;This is a log sample 2&#34;</span>, <span style="color:#e6db74">&#34;@timestamp&#34;</span>: <span style="color:#e6db74">&#34;2020-04-26T11:08:00+0000&#34;</span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="conclusions">Conclusions</h3>
+<p>If you have Elasticsearch as your logs storage and index platform and you never used before or heard about it:</p>
+<ul>
+<li><a href="https://opendistro.github.io/for-elasticsearch-docs/docs/ism/">Index State Management (ISM)</a>  → Open Distro for Elasticsearch</li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/overview-index-lifecycle-management.html">Index lifecycle management (ILM)</a> → Elasticsearch Elastic</li>
+</ul>
+<p>Then, Go fast and learn how to apply this to improve your everyday job.</p>
+<h3 id="acknowledgements">Acknowledgements</h3>
+<p>This was possible thanks to my friend <strong>Alejandro Sabater</strong>, who took his free time to review it and share its recommendation with me.</p>
+
+
+        
+
+        
+
+        
+      </article>
+
+      
+        <ul class="pager blog-pager">
+          
+          
+        </ul>
+      
+
+
+      
+
+    </div>
+  </div>
+</div>
+
+      
+<footer>
+  <div class="container">
+    
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+        </ul>
+        <p class="credits copyright text-muted">
+          
+
+          &nbsp;&bull;&nbsp;&copy;
+          
+            2020
+          
+
+          
+            &nbsp;&bull;&nbsp;
+            <a href="http://localhost:1313/">My New Hugo Site</a>
+          
+        </p>
+        
+        <p class="credits theme-by text-muted">
+          <a href="https://gohugo.io">Hugo v0.123.7</a> powered &nbsp;&bull;&nbsp; Theme <a href="https://github.com/halogenica/beautifulhugo">Beautiful Hugo</a> adapted from <a href="https://deanattali.com/beautiful-jekyll/">Beautiful Jekyll</a>
+          
+        </p>
+      </div>
+    </div>
+  </div>
+</footer><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js" integrity="sha384-G0zcxDFp5LWZtDuRMnBkk3EphCK1lhEf4UEyEM693ka574TZGwo4IWwS6QLzM/2t" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha384-w5y/xIeYixWvfM+A1cEbmHPURnvyqmVg5eVENruEdDjcyRLUSNej7512JQGspFUr" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+<script src="http://localhost:1313/js/main.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.2/photoswipe.min.js" integrity="sha384-QELNnmcmU8IR9ZAykt67vGr9/rZJdHbiWi64V88fCPaOohUlHCqUD/unNN0BXSqy" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.2/photoswipe-ui-default.min.js" integrity="sha384-m67o7SkQ1ALzKZIFh4CiTA8tmadaujiTa9Vu+nqPSwDOqHrDmxLezTdFln8077+q" crossorigin="anonymous"></script><script src="http://localhost:1313/js/load-photoswipe.js"></script>
+
+
+
+
+
+
+
+
+
+    
+  </body>
+</html>
+
