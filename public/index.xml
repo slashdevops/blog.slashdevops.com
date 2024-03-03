@@ -18,6 +18,13 @@
       <description>The Problem Surely and like me, you are trying to be more secure when connecting Jenkins with your AWS Accounts assuming a role. If you are asking What is that? , please read this: https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html&#xA;Of course, there are many different options to use, but the problem always surrounds us, if you use a plugin then the maintainability and security when talking about Jenkins plugins for sure decrease.&#xA;I particularly hate Jenkins, from my point of view this is an obsolete tool trying to survive in the modern world, and if you are concerned about security (and maintainability) sure understand my point.</description>
     </item>
     <item>
+      <title>My custom MacBook Pro [m1|m2] Provisioning</title>
+      <link>http://localhost:1313/blog/post/2022/09/17/1/my-custom-macbook-ro-m1-m2-provisioning/</link>
+      <pubDate>Sat, 17 Sep 2022 21:12:43 +0100</pubDate><author>christian@slashdevops.com (SlashDevOps)</author>
+      <guid>http://localhost:1313/blog/post/2022/09/17/1/my-custom-macbook-ro-m1-m2-provisioning/</guid>
+      <description>Operating System Install Rosetta /usr/sbin/softwareupdate --install-rosetta --agree-to-license Install Xcode xcode-select --install Package Manager Install Homebrew /bin/bash -c &amp;#34;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&amp;#34; </description>
+    </item>
+    <item>
       <title>Managing the Lifecycle of your Elasticsearch Indices</title>
       <link>http://localhost:1313/blog/post/2020/05/13/1/managing-the-lifecycle-of-your-elasticsearch-indices/</link>
       <pubDate>Wed, 13 May 2020 17:59:22 +0100</pubDate><author>christian@slashdevops.com (SlashDevOps)</author>
