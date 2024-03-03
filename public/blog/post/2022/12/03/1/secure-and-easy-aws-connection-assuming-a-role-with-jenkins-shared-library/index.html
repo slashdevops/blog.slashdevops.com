@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>
+Secure and Easy AWS Connection Assuming a Role With Jenkins Shared Library | SlashDevOps
+</title>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to connect to AWS Account assuming a role with Jenkins shared library">
+
+<meta name="generator" content="Hugo 0.123.7">
+
+
+<link rel="canonical" href="http://localhost:1313/blog/post/2022/12/03/1/secure-and-easy-aws-connection-assuming-a-role-with-jenkins-shared-library/" >
+
+
+
+
+<link href="/css/style.min.d23c1980faa61c0d6b331a0cd9dbc34fb7dade9e294067f1108fb8f26bd7796c.css" rel="stylesheet">
+
+
+
+
+</head>
+
+<body>
+
+    <div class="flexWrapper">
+        <header class="headerWrapper">
+    <div class="header">
+        <div>
+            <a class="terminal" href="http://localhost:1313/">
+                <span>christian@slashdevops.com ~ $</span>
+            </a>
+        </div>
+        <input class="side-menu" type="checkbox" id="side-menu">
+        <label class="hamb" for="side-menu"><span class="hamb-line"></span></label>
+        <nav class="headerLinks">
+            <ul>
+                
+                <li>
+                    <a href="http://localhost:1313/about" title="" >
+                        ~/about</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:1313/blog" title="" >
+                        ~/blog</a>
+                </li>
+                
+            </ul>
+        </nav>
+    </div>
+</header>
+
+
+        <div class="content">
+            <main class="main">
+                
+<div class="postWrapper">
+    <h1>Secure and Easy AWS Connection Assuming a Role With Jenkins Shared Library</h1>
+    
+    	<p>How to connect to AWS Account assuming a role with Jenkins shared library</p>
+    
+    
+    <section class="postMetadata">
+        <dl>
+            
+            
+            
+            
+                <dt>published</dt>
+                
+                <dd><time datetime="2022-12-03">December 3, 2022</time></dd>
+            
+            
+                <dt>reading time</dt>
+                <dd>5 minutes</dd>
+            
+        </dl>
+    </section>
+    
+    <div>
+        <h2 id="the-problem">The Problem</h2>
+<p>Surely and like me, you are trying to be more secure when connecting <a href="https://www.jenkins.io/">Jenkins</a> with your <a href="https://aws.amazon.com/account/">AWS Accounts</a> assuming a role. If you are asking What is that? , please read this: <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html">https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html</a></p>
+<p>Of course, there are many different options to use, but the problem always surrounds us, if you use a plugin then the maintainability and security when talking about Jenkins plugins for sure decrease.</p>
+<p>I particularly hate Jenkins, from my point of view this is an obsolete tool trying to survive in the modern world, and if you are concerned about security (and maintainability) sure understand my point.</p>
+<h2 id="so-why-im-writing-about-that">So, why I’m writing about that?</h2>
+<ul>
+<li>Because unfortunately I still using Jenkins and sweating their maintenance</li>
+<li>Because as a rule of thumb I try to avoid plugins that don’t have any release in the time windows of 6-12 months</li>
+<li>Helps others to avoid loose time and security when needs the same that me, AWS cross-account connections using Jenkins assuming a role</li>
+<li>Because at least if I have an Issue this is my code and I can fix it</li>
+</ul>
+<h2 id="whats-this">What’s this?</h2>
+<ul>
+<li>This is a guide and code for somebody using Jenkins shared library</li>
+<li>This is a minimal blog entry to help someone that understands Jenkins and Groovy</li>
+<li>This could help you if you are using Jenkins + Jenkins shared library + AWS cross-account and cross-region roles</li>
+</ul>
+<h2 id="what-it-is-not">what it is not?</h2>
+<ul>
+<li>A tutorial</li>
+<li>A very well-explained and step-by-step guide</li>
+<li>Something you surely need to use</li>
+<li>An AWS cross-account tutorial or explanation guide</li>
+</ul>
+<h2 id="the-solution">The Solution</h2>
+<p>This is how looks a segment of the code on my production <a href="https://www.jenkins.io/doc/book/pipeline/syntax/">Jenkins declarative pipeline</a>.</p>
+<p>Look at <strong>withAwsEnVars</strong> (lines: 4, 11) pipeline tags</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="background-color:#3c3d38"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span></span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;display:grid;"><code class="language-groovy" data-lang="groovy"><span style="display:flex;"><span><span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>      stage<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;setup repositories&#39;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        steps <span style="color:#f92672">{</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>          withAwsEnVars<span style="color:#f92672">(</span>roleName: cicd<span style="color:#f92672">.</span><span style="color:#a6e22e">getRole</span><span style="color:#f92672">(),</span> roleAccount: codeArtifact<span style="color:#f92672">.</span><span style="color:#a6e22e">getOwner</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;npm-private&#39;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            script <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>              log<span style="color:#f92672">.</span><span style="color:#a6e22e">info</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;setting repositories \&#39;npm-private\&#39; credentials for dependencies&#39;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>              codeArtifact<span style="color:#f92672">.</span><span style="color:#a6e22e">setupNpmrc</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;npm-private&#39;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#39;@my-company-namespace&#39;</span><span style="color:#f92672">,</span> params<span style="color:#f92672">.</span><span style="color:#a6e22e">timeoutTime</span><span style="color:#f92672">*</span><span style="color:#ae81ff">60</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>              codeArtifact<span style="color:#f92672">.</span><span style="color:#a6e22e">setupNpmrc</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;npm-private&#39;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#39;@my-company-other-namespace&#39;</span><span style="color:#f92672">,</span> params<span style="color:#f92672">.</span><span style="color:#a6e22e">timeoutTime</span><span style="color:#f92672">*</span><span style="color:#ae81ff">60</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">}</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>          withAwsEnVars<span style="color:#f92672">(</span>roleName: cicd<span style="color:#f92672">.</span><span style="color:#a6e22e">getRole</span><span style="color:#f92672">(),</span> roleAccount: codeArtifact<span style="color:#f92672">.</span><span style="color:#a6e22e">getOwner</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;npm-public&#39;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            script <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>              log<span style="color:#f92672">.</span><span style="color:#a6e22e">info</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;setting repositories \&#39;npm-public\&#39; credentials for dependencies&#39;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>              codeArtifact<span style="color:#f92672">.</span><span style="color:#a6e22e">setupNpmrc</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;npm-public&#39;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#39;&#39;</span><span style="color:#f92672">,</span> params<span style="color:#f92672">.</span><span style="color:#a6e22e">timeoutTime</span><span style="color:#f92672">*</span><span style="color:#ae81ff">60</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>withAwsEnVars</strong> is a <a href="https://www.jenkins.io/doc/book/pipeline/shared-libraries/#directory-structure">Groovy function</a> used in my <a href="https://github.com/christiangda/jenkins-shared-library">Jenkins Shared Library</a> and this is the <a href="https://github.com/christiangda/jenkins-shared-library/vars/withAwsEnVars.groovy">withAwsEnVars.groovy</a> file content:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">58
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">59
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">62
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">63
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">64
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">65
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">66
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">67
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-groovy" data-lang="groovy"><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/env groovy</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">paramters:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  roleArn (required)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  roleAccount (required)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  sessionName (optional)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  sessionDuration (optional)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Examples:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  stage(&#39;test aws credential&#39;) {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    steps {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">      withAwsEnVars(roleName:&#39;cicd-execution-role&#39;, roleAccount: &#39;12345678910&#39;) {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        sh &#34;echo TOKEN: ${AWS_SESSION_TOKEN}&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        sh &#34;echo KEY: ${AWS_SECRET_ACCESS_KEY}&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        sh &#34;echo ID: ${AWS_ACCESS_KEY_ID}&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        sh &#39;aws s3 ls&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">      }
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">      sh &#34;exit 1&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  }
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">call</span><span style="color:#f92672">(</span>Map params<span style="color:#f92672">,</span> Closure body<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span>params<span style="color:#f92672">.</span><span style="color:#a6e22e">roleName</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    error <span style="color:#e6db74">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      parameter &#39;roleName&#39; is required.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      ---
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      Example:  withAwsEnVars(roleName:&#39;cicd-execution-role&#39;, roleAccount: &#39;12345678910&#39;) {...}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span>params<span style="color:#f92672">.</span><span style="color:#a6e22e">roleAccount</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    error <span style="color:#e6db74">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      parameter &#39;roleAccount&#39; is required.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      ---
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      Example:  withAwsEnVars(roleName:&#39;cicd-execution-role&#39;, roleAccount: &#39;12345678910&#39;) {...}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// get optional parameters if not set default
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  String sessionName <span style="color:#f92672">=</span> params<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;sessionName&#39;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#39;jenkins&#39;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>  Integer duration <span style="color:#f92672">=</span> params<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;sessionDuration&#39;</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">900</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  cred <span style="color:#f92672">=</span> awsCredentials<span style="color:#f92672">.</span><span style="color:#a6e22e">getFromAssumeRole</span><span style="color:#f92672">(</span>params<span style="color:#f92672">.</span><span style="color:#a6e22e">roleName</span><span style="color:#f92672">,</span> params<span style="color:#f92672">.</span><span style="color:#a6e22e">roleAccount</span><span style="color:#f92672">,</span> sessionName<span style="color:#f92672">,</span> duration<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  AWS_ACCESS_KEY_ID <span style="color:#f92672">=</span> cred<span style="color:#f92672">.</span><span style="color:#a6e22e">AccessKeyId</span>
+</span></span><span style="display:flex;"><span>  AWS_SECRET_ACCESS_KEY <span style="color:#f92672">=</span> cred<span style="color:#f92672">.</span><span style="color:#a6e22e">SecretAccessKey</span>
+</span></span><span style="display:flex;"><span>  AWS_SESSION_TOKEN <span style="color:#f92672">=</span> cred<span style="color:#f92672">.</span><span style="color:#a6e22e">SessionToken</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  wrap<span style="color:#f92672">([</span>
+</span></span><span style="display:flex;"><span>      $class<span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;MaskPasswordsBuildWrapper&#39;</span><span style="color:#f92672">,</span>
+</span></span><span style="display:flex;"><span>      varPasswordPairs: <span style="color:#f92672">[</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">[</span>password: AWS_ACCESS_KEY_ID<span style="color:#f92672">],</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">[</span>password: AWS_SECRET_ACCESS_KEY<span style="color:#f92672">],</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">[</span>password: AWS_SESSION_TOKEN<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">])</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    withEnv<span style="color:#f92672">([</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}&#34;</span><span style="color:#f92672">,</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}&#34;</span><span style="color:#f92672">,</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">])</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>      body<span style="color:#f92672">()</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>and this is my <a href="https://github.com/christiangda/jenkins-shared-library/vars/awsCredentials.groovy">awsCredentials.groovy</a> file content:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-groovy" data-lang="groovy"><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/env groovy</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Parameters:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  roleName (required)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  roleAccount (required)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Examples:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  cred = awsCredentials.getFromAssumeRole(...)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  accessKey = awsCredentials.getFromAssumeRole(...).AccessKeyId
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span><span style="display:flex;"><span>String <span style="color:#a6e22e">getFromAssumeRole</span><span style="color:#f92672">(</span>String roleName<span style="color:#f92672">,</span> String roleAccount<span style="color:#f92672">,</span> String sessionName<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jenkins&#39;</span><span style="color:#f92672">,</span> Integer duration<span style="color:#f92672">=</span><span style="color:#ae81ff">900</span><span style="color:#f92672">){</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  String roleArn <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;arn:aws:iam::&#39;</span> <span style="color:#f92672">+</span> roleAccount <span style="color:#f92672">+</span><span style="color:#e6db74">&#39;:role/&#39;</span><span style="color:#f92672">+</span> roleName
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  List<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> options <span style="color:#f92672">=</span> <span style="color:#f92672">[]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  options <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;--role-arn ${roleArn}&#34;</span>
+</span></span><span style="display:flex;"><span>  options <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;--role-session-name ${sessionName}&#34;</span>
+</span></span><span style="display:flex;"><span>  options <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;--duration-seconds ${duration}&#34;</span>
+</span></span><span style="display:flex;"><span>  options <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;--query &#39;Credentials&#39;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  optionsString <span style="color:#f92672">=</span> options<span style="color:#f92672">.</span><span style="color:#a6e22e">join</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// this is used to mask any critical information
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  wrap<span style="color:#f92672">([</span>$class<span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;MaskPasswordsBuildWrapper&#39;</span><span style="color:#f92672">,</span> varPasswordPairs: <span style="color:#f92672">[[</span>password: roleArn<span style="color:#f92672">],</span> <span style="color:#f92672">[</span>password: sessionName<span style="color:#f92672">]]])</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    String strCreds <span style="color:#f92672">=</span> sh<span style="color:#f92672">(</span>
+</span></span><span style="display:flex;"><span>      returnStdout: <span style="color:#66d9ef">true</span><span style="color:#f92672">,</span>
+</span></span><span style="display:flex;"><span>      script: <span style="color:#e6db74">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        aws sts assume-role ${optionsString}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">trim</span><span style="color:#f92672">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">readJSON</span><span style="color:#f92672">(</span>text: strCreds<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>from the code above, definitions are located in the <a href="https://github.com/christiangda/jenkins-shared-library">Jenkins Shared Library</a></p>
+<ul>
+<li><a href="https://github.com/christiangda/jenkins-shared-library/blob/bd79251051606d05d53bcefe3c6c376c1971620b/vars/codeArtifact.groovy#L92">codeArtifact.setupNpmrc(&hellip;)</a> -&gt; <a href="https://github.com/christiangda/jenkins-shared-library/blob/main/vars/codeArtifact.groovy">codeArtifact.groovy</a></li>
+<li><a href="https://github.com/christiangda/jenkins-shared-library/blob/bd79251051606d05d53bcefe3c6c376c1971620b/vars/codeArtifact.groovy#L18">codeArtifact.getOwner(&hellip;)</a> -&gt; <a href="https://github.com/christiangda/jenkins-shared-library/blob/main/vars/codeArtifact.groovy">codeArtifact.groovy</a></li>
+<li><a href="https://github.com/christiangda/jenkins-shared-library/blob/main/vars/cicd.groovy#L6">cicd.getRole()</a> -&gt; <a href="https://github.com/christiangda/jenkins-shared-library/blob/main/vars/cicd.groovy">cicd.groovy</a></li>
+</ul>
+<h3 id="the-minimal-requirements-on-your-jenkins-controller-and-agents">The minimal requirements on your Jenkins controller and agents</h3>
+<ul>
+<li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html">AWS CLI</a></li>
+<li><a href="https://plugins.jenkins.io/pipeline-utility-steps/">Jenkins Plugin – Pipeline Utility Steps</a> –&gt; <a href="https://www.jenkins.io/doc/pipeline/steps/pipeline-utility-steps/#pipeline-utility-steps">How to use?</a></li>
+<li><a href="https://plugins.jenkins.io/workflow-basic-steps/">Jenkins Plugin – Pipeline: Basic Steps</a> –&gt;<a href="https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#pipeline-basic-steps">How to use?</a></li>
+<li><a href="https://plugins.jenkins.io/mask-passwords/#documentation">Jenkins Plugin – Mask Passwords</a> –&gt; <a href="https://www.jenkins.io/doc/pipeline/steps/mask-passwords/#mask-passwords-plugin">How to use?</a></li>
+</ul>
+<h2 id="so-what-is-the-magic-why-do-i-say-this-is-secure">So, What is the Magic? Why do I say this is secure?</h2>
+<p>Maybe after looking at the following pipeline code, you will see how easy is to use this, and this is <strong>secure</strong> because if you execute the following code in your pipeline:</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-groovy" data-lang="groovy"><span style="display:flex;"><span>  <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>   stage<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;test aws credential&#39;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>     steps <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>       withAwsEnVars<span style="color:#f92672">(</span>roleName:<span style="color:#e6db74">&#39;cicd-execution-role&#39;</span><span style="color:#f92672">,</span> roleAccount: <span style="color:#e6db74">&#39;12345678910&#39;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>         sh <span style="color:#e6db74">&#34;echo TOKEN: ${AWS_SESSION_TOKEN}&#34;</span>
+</span></span><span style="display:flex;"><span>         sh <span style="color:#e6db74">&#34;echo KEY: ${AWS_SECRET_ACCESS_KEY}&#34;</span>
+</span></span><span style="display:flex;"><span>         sh <span style="color:#e6db74">&#34;echo ID: ${AWS_ACCESS_KEY_ID}&#34;</span>
+</span></span><span style="display:flex;"><span>         sh <span style="color:#e6db74">&#39;aws s3 ls&#39;</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>       sh <span style="color:#e6db74">&#34;exit 1&#34;</span>
+</span></span><span style="display:flex;"><span>     <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>you will see <strong>masked</strong> the <strong>TOKEN</strong>, <strong>KEY</strong> and <strong>ID</strong>. Instead of seeing the real value, you will see <strong>***********</strong> characters.</p>
+<h2 id="tools-and-concepts">Tools and Concepts</h2>
+<p>There are various tools and concepts I used here, the first that allows me to do that so <strong>easily</strong> was <a href="https://groovy-lang.org/closures.html">Groovy Closures</a> and it is explained how to use on <a href="https://www.jenkins.io/doc/book/pipeline/shared-libraries/#defining-custom-steps">Jenkins Shared Library</a> –&gt; <a href="https://www.jenkins.io/doc/book/pipeline/shared-libraries/#defining-custom-steps">Defining custom steps</a>.</p>
+<p>Then we have the tool <a href="https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#withenv-set-environment-variables">withEnv</a> provided by the <a href="https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#pipeline-basic-steps">Jenkins Plugin – Pipeline: Basic Steps</a> and in combination with the use of the <a href="https://groovy-lang.org/closures.html">Groovy Closures</a> allowed me to export the <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html">AWS Environment Variables</a> coming from <a href="https://github.com/christiangda/jenkins-shared-library/blob/9fd0250d914b681696dfd5a097dd935da56589fc/vars/awsCredentials.groovy#L12">awsCredentials.getFromAssumeRole(…)</a> groovy function into a container script part.</p>
+<p>But, make sure that anyone who will use Jenkins Controller and Pipeline doesn’t have access to the values of the <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html">AWS Environment Variables</a> is the job of <a href="https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#wrap-general-build-wrapper">wrap</a> provided by the <a href="https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#pipeline-basic-steps">Jenkins Plugin – Pipeline: Basic Steps</a> + <a href="https://www.jenkins.io/doc/pipeline/steps/mask-passwords/#mask-passwords-plugin">maskPasswords</a> provided by <a href="https://plugins.jenkins.io/mask-passwords/#documentation">Jenkins Plugin – Mask Passwords</a>.</p>
+<h2 id="others-links">Others Links</h2>
+<ul>
+<li><a href="https://www.jenkins.io/doc/book/installing/">https://www.jenkins.io/doc/book/installing/</a></li>
+<li><a href="https://www.jenkins.io/doc/book/using/">https://www.jenkins.io/doc/book/using/</a></li>
+<li><a href="https://www.jenkins.io/doc/book/security/#securing-jenkins">https://www.jenkins.io/doc/book/security/#securing-jenkins</a></li>
+<li><a href="https://www.jenkins.io/doc/book/pipeline/">https://www.jenkins.io/doc/book/pipeline/</a></li>
+</ul>
+<h2 id="closing">Closing</h2>
+<p>Even hating <a href="https://www.jenkins.io/">Jenkins</a> like me, you can find different ways to do your life easy and secure with him.</p>
+<p>If you want to look at my GitHub repositories related to Jenkins, here you have:</p>
+<ul>
+<li><a href="https://github.com/christiangda/jenkins-casc-controller">https://github.com/christiangda/jenkins-casc-controller</a></li>
+<li><a href="https://github.com/christiangda/jenkins-shared-library">https://github.com/christiangda/jenkins-shared-library</a></li>
+</ul>
+
+    </div>
+</div>
+
+            </main>
+        </div>
+
+
+        <footer class="footer">
+    
+        <span>© 2024 SlashDevOps, Built with <a href="https://gohugo.io" class="footerLink">Hugo</a> and <a href="https://github.com/LordMathis/hugo-theme-nightfall" class="footerLink">Nightfall</a> theme</span>
+    
+</footer>
+    </div>
+
+</body>
+
+</html>
