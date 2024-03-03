@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>My New Hugo Site</title>
+    <title>The SlashDevOps site</title>
     <link>http://localhost:1313/</link>
-    <description>Recent content on My New Hugo Site</description>
+    <description>Recent content on The SlashDevOps site</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
+    <managingEditor>christian@slashdevops.com (SlashDevOps)</managingEditor>
+    <webMaster>christian@slashdevops.com (SlashDevOps)</webMaster>
     <lastBuildDate>Wed, 13 May 2020 17:59:22 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Managing the Lifecycle of your Elasticsearch Indices</title>
       <link>http://localhost:1313/blog/post/2020/05/13/1/managing-the-lifecycle-of-your-elasticsearch-indices/</link>
-      <pubDate>Wed, 13 May 2020 17:59:22 +0100</pubDate>
+      <pubDate>Wed, 13 May 2020 17:59:22 +0100</pubDate><author>christian@slashdevops.com (SlashDevOps)</author>
       <guid>http://localhost:1313/blog/post/2020/05/13/1/managing-the-lifecycle-of-your-elasticsearch-indices/</guid>
       <description>Managing the Lifecycle of your Elasticsearch Indices Just like me, you are probably storing your [Applications | Infrastructure | IoT ] Logs / Traces (as a time series) into Elasticsearch or at least considering doing it.&#xA;If that is the case, you might be wondering how to efficiently manage index lifecycles in an automated and clean manner, then this post is for you!&#xA;What&amp;rsquo;s happening? Basically, this means that your log management/aggregator applications are storing the logs in Elasticsearch using the timestamp (of capture, processing, or another one) for every record of data and grouping, using a pattern for every group.</description>
     </item>

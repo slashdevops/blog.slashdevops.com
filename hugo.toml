@@ -1,4 +1,38 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://slashdevops.com/'
 languageCode = 'en-us'
 theme = 'nightfall'
-title = 'My New Hugo Site'
+title = 'The SlashDevOps site'
+
+[menu]
+[[menu.header]]
+name = "blog"
+url = "blog"
+weight = 0
+[[menu.header]]
+name = "about"
+url = "about"
+weight = 1
+
+[params]
+published = true
+readingTime = true
+sitedescription = 'The SlashDevOps Site'
+footerHtml = '© 2024 SlashDevOps, Built with <a href="https://gohugo.io" class="footerLink">Hugo</a> and <a href="https://github.com/LordMathis/hugo-theme-nightfall" class="footerLink">Nightfall</a> theme'
+
+user = "christian"
+hostname = "slashdevops.com"
+
+[params.author]
+name = "SlashDevOps"
+email = "christian@slashdevops.com"
+
+[[params.social]]
+key = 3
+name = "email"
+url = "mailto:christian@slashdevops.com"
+
+[[params.social]]
+key = 0
+name = "github"
+url = "https://github.com/slashdevops"
+icon = "fa-email fa-github"
