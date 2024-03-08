@@ -2,7 +2,7 @@
 title = 'My custom MacBook Pro [m1|m2] Provisioning'
 description = 'How I provision my MacBook Pro [m1|m2] with my custom scripts'
 date = 2022-09-17T21:12:43+01:00
-draft = false
+draft = true
 +++
 ## Operating System
 

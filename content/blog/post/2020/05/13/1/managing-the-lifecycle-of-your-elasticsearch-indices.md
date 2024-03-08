@@ -2,7 +2,7 @@
 title = 'Managing the Lifecycle of your Elasticsearch Indices'
 description = 'How to efficiently manage index lifecycles in an automated and clean manner'
 date = 2020-05-13T17:59:22+01:00
-draft = false
+draft = true
 +++
 ## Managing the Lifecycle of your Elasticsearch Indices
 

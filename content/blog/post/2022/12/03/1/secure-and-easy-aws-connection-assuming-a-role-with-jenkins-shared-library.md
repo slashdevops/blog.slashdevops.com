@@ -2,7 +2,7 @@
 title = 'Secure and Easy AWS Connection Assuming a Role With Jenkins Shared Library'
 description = 'How to connect to AWS Account assuming a role with Jenkins shared library'
 date = 2022-12-03T20:39:29+01:00
-draft = false
+draft = true
 +++
 ## The Problem
 

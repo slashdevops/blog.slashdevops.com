@@ -22,7 +22,7 @@
       <link>http://localhost:1313/blog/post/2022/09/17/1/my-custom-macbook-ro-m1-m2-provisioning/</link>
       <pubDate>Sat, 17 Sep 2022 21:12:43 +0100</pubDate><author>christian@slashdevops.com (SlashDevOps)</author>
       <guid>http://localhost:1313/blog/post/2022/09/17/1/my-custom-macbook-ro-m1-m2-provisioning/</guid>
-      <description>Operating System Install Rosetta /usr/sbin/softwareupdate --install-rosetta --agree-to-license Install Xcode xcode-select --install Package Manager Install Homebrew /bin/bash -c &amp;#34;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&amp;#34; </description>
+      <description>Operating System Install Rosetta /usr/sbin/softwareupdate --install-rosetta --agree-to-license Install Xcode xcode-select --install Package Manager Install Homebrew /bin/bash -c &amp;#34;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&amp;#34; Add Homebrew to your PATH -&amp;gt; /Users/&amp;lt;user home&amp;gt;/.zprofile echo &amp;#39;eval $(/opt/homebrew/bin/brew shellenv)&amp;#39; &amp;gt;&amp;gt; /Users/$USER/.zprofile eval $(/opt/homebrew/bin/brew shellenv) (OPTIONAL) Update/upgrade Homebrew brew update &amp;amp;&amp;amp; brew upgrade Terminal and Mods Install iterm2 brew install --cask iterm2 WARNING: After this step close the default term and open iterm2&#xA;Install Oh My Zsh sh -c &amp;#34;$(curl -fsSL https://raw.</description>
     </item>
     <item>
       <title>Managing the Lifecycle of your Elasticsearch Indices</title>
